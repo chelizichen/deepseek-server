@@ -1,0 +1,9 @@
+/build
+
+/dist
+
+/ai/config.py
+
+__pycache__
+
+/.idea
