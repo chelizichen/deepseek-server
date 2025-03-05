@@ -2,8 +2,11 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, TEXT,
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
+from conf import sgrid_config
+
 # 配置数据库连接
-engine = create_engine('mysql+pymysql://root:123456@localhost:3306/t_ai')
+print("config.db: ", sgrid_config.get("config.db"))
+engine = create_engine(sgrid_config.get("config.db"),isolation_level="READ COMMITTED")
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
@@ -72,7 +75,7 @@ class Prompts(Base):
     create_user_id = Column(Integer)  # 创建用户id
     create_time = Column(DATETIME)
 
-
+# 会话提示词表
 class ChatsPrompts(Base):
     __tablename__ = 'chats_prompts'
     """

@@ -88,6 +88,29 @@ def add_chat(user_id, question, answer, typ, answer_type, create_time, session_i
     session.close()
     return chat_dict
 
+def get_chat_history_by_session_id(session_id:int):
+    session = Session()
+    chats = session.query(Chats).filter_by(session_id=session_id).all()
+    session.close()
+    return chats
+
+def get_prompts_by_session_id(session_id:int):
+    session = Session()
+    prompts = session.query(ChatsPrompts,Prompts.name).join(
+        Prompts, ChatsPrompts.prompt_id == Prompts.id, isouter=True
+    ).filter(ChatsPrompts.session_id == session_id).all()
+    session.close()
+    result = []
+    for chat_prompt, prompt_name in prompts:
+        chat_prompt_dict = {
+            "id": chat_prompt.id,
+            "session_id": chat_prompt.session_id,
+            "user_id": chat_prompt.user_id,
+            "prompt_id": chat_prompt.prompt_id,
+            "prompt_name": prompt_name
+        }
+        result.append(chat_prompt_dict)
+    return result
 
 def get_chat(chat_id):
     session = Session()
