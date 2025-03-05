@@ -48,5 +48,3 @@ class SgridConfig:
         return int(self.config.get("server.port", 8080))
 
 
-sgrid_config = SgridConfig()
-sgrid_config.init_config()

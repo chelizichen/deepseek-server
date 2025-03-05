@@ -6,3 +6,5 @@ langchain-core==0.2.10
 langchainplus-sdk==0.0.21
 pydantic==1.10.21
 langchain_community==0.2.0
+pymysql==1.1.1
+sqlalchemy==2.0.38

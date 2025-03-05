@@ -2,7 +2,7 @@
 
 /dist
 
-/ai/config.py
+/service/config.py
 
 __pycache__
 
