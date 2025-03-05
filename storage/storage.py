@@ -1,16 +1,23 @@
-from conf.db import Session, User
+from conf.db import Session, Sessions, Users, Chats, Prompts, ChatsPrompts
+
+"""
+****************************** USER **************************
+"""
 
 
-# 用户增删改查功能
-def add_user(name, email):
+# 用户相关操作
+def add_user(name, email, password, phone, create_time):
     session = Session()
-    new_user = User(name=name, email=email)
+    new_user = Users(name=name, email=email, password=password, phone=phone, create_time=create_time)
     session.add(new_user)
     session.commit()
     user_dict = {
         "id": new_user.id,
         "name": new_user.name,
-        "email": new_user.email
+        "email": new_user.email,
+        "password": new_user.password,
+        "phone": new_user.phone,
+        "create_time": new_user.create_time
     }
     session.close()
     return user_dict
@@ -18,19 +25,25 @@ def add_user(name, email):
 
 def get_user(user_id):
     session = Session()
-    user = session.query(User).filter_by(id=user_id).first()
+    user = session.query(Users).filter_by(id=user_id).first()
     session.close()
     return user
 
 
-def update_user(user_id, name=None, email=None):
+def update_user(user_id, name=None, email=None, password=None, phone=None, create_time=None):
     session = Session()
-    user = session.query(User).filter_by(id=user_id).first()
+    user = session.query(Users).filter_by(id=user_id).first()
     if user:
         if name:
             user.name = name
         if email:
             user.email = email
+        if password:
+            user.password = password
+        if phone:
+            user.phone = phone
+        if create_time:
+            user.create_time = create_time
         session.commit()
     session.close()
     return user
@@ -38,7 +51,7 @@ def update_user(user_id, name=None, email=None):
 
 def delete_user(user_id):
     session = Session()
-    user = session.query(User).filter_by(id=user_id).first()
+    user = session.query(Users).filter_by(id=user_id).first()
     if user:
         session.delete(user)
         session.commit()
@@ -46,19 +59,284 @@ def delete_user(user_id):
     return user
 
 
-if __name__ == "__main__":
-    # 添加用户
-    new_user = add_user("John Doe", "john@example.com")
-    print(f"Added user: {new_user.id}, {new_user.name}, {new_user.email}")
+"""
+****************************** USER **************************
+"""
 
-    # 获取用户
-    retrieved_user = get_user(new_user.id)
-    print(f"Retrieved user: {retrieved_user.id}, {retrieved_user.name}, {retrieved_user.email}")
+"""
+****************************** CHAT **************************
+"""
 
-    # 更新用户
-    updated_user = update_user(new_user.id, name="Jane Doe")
-    print(f"Updated user: {updated_user.id}, {updated_user.name}, {updated_user.email}")
 
-    # 删除用户
-    deleted_user = delete_user(new_user.id)
-    print(f"Deleted user: {deleted_user.id}, {deleted_user.name}, {deleted_user.email}")
+# 聊天记录相关操作
+def add_chat(user_id, question, answer, typ, answer_type, create_time, session_id):
+    session = Session()
+    new_chat = Chats(user_id=user_id, question=question, answer=answer, type=typ, answer_type=answer_type,
+                     create_time=create_time, session_id=session_id)
+    session.add(new_chat)
+    session.commit()
+    chat_dict = {
+        "id": new_chat.id,
+        "user_id": new_chat.user_id,
+        "question": new_chat.question,
+        "answer": new_chat.answer,
+        "type": new_chat.type,
+        "answer_type": new_chat.answer_type,
+        "create_time": new_chat.create_time,
+        "session_id": new_chat.session_id
+    }
+    session.close()
+    return chat_dict
+
+
+def get_chat(chat_id):
+    session = Session()
+    chat = session.query(Chats).filter_by(id=chat_id).first()
+    session.close()
+    return chat
+
+
+def get_chat_by_session_id(session_id):
+    session = Session()
+    chats = session.query(Chats).filter_by(session_id=session_id).all()
+    session.close()
+    return chats
+
+
+def update_chat(chat_id, user_id=None, question=None, answer=None, type=None, answer_type=None, create_time=None):
+    session = Session()
+    chat = session.query(Chats).filter_by(id=chat_id).first()
+    if chat:
+        if user_id:
+            chat.user_id = user_id
+        if question:
+            chat.question = question
+        if answer:
+            chat.answer = answer
+        if type:
+            chat.type = type
+        if answer_type:
+            chat.answer_type = answer_type
+        if create_time:
+            chat.create_time = create_time
+        session.commit()
+    session.close()
+    return chat
+
+
+def delete_chat(chat_id):
+    session = Session()
+    chat = session.query(Chats).filter_by(id=chat_id).first()
+    if chat:
+        session.delete(chat)
+        session.commit()
+    session.close()
+    return chat
+
+
+"""
+****************************** CHAT **************************
+"""
+"""
+****************************** PROMPT **************************
+"""
+
+
+# 提示词相关操作
+def add_prompt(name, use_count, create_user_id, create_time):
+    session = Session()
+    new_prompt = Prompts(name=name, use_count=use_count, create_user_id=create_user_id, create_time=create_time)
+    session.add(new_prompt)
+    session.commit()
+    prompt_dict = {
+        "id": new_prompt.id,
+        "name": new_prompt.name,
+        "use_count": new_prompt.use_count,
+        "create_user_id": new_prompt.create_user_id,
+        "create_time": new_prompt.create_time
+    }
+    session.close()
+    return prompt_dict
+
+
+def get_prompt(prompt_id):
+    session = Session()
+    prompt = session.query(Prompts).filter_by(id=prompt_id).first()
+    session.close()
+    return prompt
+
+
+def update_prompt(prompt_id, name=None, use_count=None, create_user_id=None, create_time=None):
+    session = Session()
+    prompt = session.query(Prompts).filter_by(id=prompt_id).first()
+    if prompt:
+        if name:
+            prompt.name = name
+        if use_count:
+            prompt.use_count = use_count
+        if create_user_id:
+            prompt.create_user_id = create_user_id
+        if create_time:
+            prompt.create_time = create_time
+        session.commit()
+    session.close()
+    return prompt
+
+
+def delete_prompt(prompt_id):
+    session = Session()
+    prompt = session.query(Prompts).filter_by(id=prompt_id).first()
+    if prompt:
+        session.delete(prompt)
+        session.commit()
+    session.close()
+    return prompt
+
+
+"""
+****************************** PROMPT **************************
+"""
+"""
+****************************** CHAT_PROMPT **************************
+"""
+
+
+# 聊天记录和提示词关联表相关操作
+def add_chat_prompt(session_id, user_id, prompt_id):
+    session = Session()
+    new_chat_prompt = ChatsPrompts(session_id=session_id, user_id=user_id, prompt_id=prompt_id)
+    session.add(new_chat_prompt)
+    session.commit()
+    chat_prompt_dict = {
+        "id": new_chat_prompt.id,
+        "session_id": new_chat_prompt.session_id,
+        "user_id": new_chat_prompt.user_id,
+        "prompt_id": new_chat_prompt.prompt_id
+    }
+    session.close()
+    return chat_prompt_dict
+
+
+def get_chat_prompt(chat_prompt_id):
+    session = Session()
+    chat_prompt = session.query(ChatsPrompts).filter_by(id=chat_prompt_id).first()
+    session.close()
+    return chat_prompt
+
+
+def update_chat_prompt(chat_prompt_id, chat_id=None, user_id=None):
+    session = Session()
+    chat_prompt = session.query(ChatsPrompts).filter_by(id=chat_prompt_id).first()
+    if chat_prompt:
+        if chat_id:
+            chat_prompt.chat_id = chat_id
+        if user_id:
+            chat_prompt.user_id = user_id
+        session.commit()
+    session.close()
+    return chat_prompt
+
+
+def delete_chat_prompt(chat_prompt_id):
+    session = Session()
+    chat_prompt = session.query(ChatsPrompts).filter_by(id=chat_prompt_id).first()
+    if chat_prompt:
+        session.delete(chat_prompt)
+        session.commit()
+    session.close()
+    return chat_prompt
+
+
+"""
+****************************** CHAT_PROMPT **************************
+"""
+"""
+****************************** SESSION **************************
+"""
+
+
+# 添加会话记录
+def add_session(create_user_id, name, create_time):
+    session = Session()
+    try:
+        new_session = Sessions(
+            create_user_id=create_user_id,
+            name=name,
+            create_time=create_time
+        )
+        session.add(new_session)
+        session.commit()
+        session_info = {
+            "id": new_session.id,
+            "create_user_id": new_session.create_user_id,
+            "name": new_session.name,
+            "create_time": new_session.create_time
+        }
+        return session_info
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+# 获取会话记录
+def get_session(session_id):
+    session = Session()
+    try:
+        session_record = session.query(Sessions).filter_by(id=session_id).first()
+        return session_record
+    except Exception as e:
+        raise e
+    finally:
+        session.close()
+
+
+# 更新会话记录
+def update_session(session_id, create_user_id=None, name=None, chat_id=None, create_time=None):
+    session = Session()
+    try:
+        session_record = session.query(Sessions).filter_by(id=session_id).first()
+        if session_record:
+            if create_user_id:
+                session_record.create_user_id = create_user_id
+            if name:
+                session_record.name = name
+            if chat_id:
+                session_record.chat_id = chat_id
+            if create_time:
+                session_record.create_time = create_time
+            session.commit()
+        return session_record
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+# 删除会话记录
+def delete_session(session_id):
+    session = Session()
+    try:
+        session_record = session.query(Sessions).filter_by(id=session_id).first()
+        if session_record:
+            session.delete(session_record)
+            session.commit()
+        return session_record
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+"""
+****************************** SESSION **************************
+"""
+
+"""
+1. create_session
+2. create prompts_map with session 
+3. chat 
+"""
