@@ -5,7 +5,32 @@
 
 PYTHON 3.9
 
+## Windows2Linux
+
+windows 需要使用 wsl
+````
+wsl --install
+````
+
+- nautilus 
+- miniconda
+- git
+
+````shell
+$ conda create -n dpsk python=3.9
+````
+
+然后使用pycharm 添加解释器，连接 miniconda/envs 下的虚拟环境
+
+
+
 ### Source
+
+````
+$ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
+````
+
+
 ````
 conda config --show channels
 channels:
@@ -58,3 +83,4 @@ $ pyinstaller  main.spec --clean -p=/Users/leemulus/miniconda3/envs/AI/lib/pytho
 ````shell
 ./dist/main
 ````
+
