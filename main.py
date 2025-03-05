@@ -1,10 +1,9 @@
+from conf.init import sgrid_config
 import uvicorn
-import argparse
 from ai.service import ai_programmer as ai_programmer_service
 from fastapi import FastAPI
 
 app = FastAPI()
-
 
 @app.get("/greet")
 async def root():
@@ -18,11 +17,10 @@ async def ai_programmer(chat_msg: str):
 
 def main():
     # 解析命令行参数
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=8080, help="Port to run the server on")
-    args = parser.parse_args()
+    port = sgrid_config.get_port()
+    print(f"Sgrid-Python[load port] {port}")
     # 启动 uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=args.port)
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
 
 if __name__ == "__main__":
