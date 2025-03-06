@@ -12,6 +12,4 @@ __pycache__
 
 *.tar.gz
 
-sgrid.yml
-
 dist/sgrid.yml

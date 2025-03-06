@@ -1,12 +1,15 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, TEXT, DATETIME
+import os
+import time
+
+from sqlalchemy import create_engine, Column, Integer, String, TEXT, DATETIME
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 from conf import sgrid_config
 
 # 配置数据库连接
-print("config.db: ", sgrid_config.get("config.db"))
-engine = create_engine(sgrid_config.get("config.db"),isolation_level="READ COMMITTED")
+engine = create_engine(sgrid_config.get("config.db"),
+                       pool_pre_ping=True, isolation_level="REPEATABLE READ")
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
@@ -75,6 +78,7 @@ class Prompts(Base):
     create_user_id = Column(Integer)  # 创建用户id
     create_time = Column(DATETIME)
 
+
 # 会话提示词表
 class ChatsPrompts(Base):
     __tablename__ = 'chats_prompts'
@@ -88,4 +92,5 @@ class ChatsPrompts(Base):
 
 
 # 创建表
-Base.metadata.create_all(engine)
+if os.environ.get("SGRID_CONFIG") is None:
+    Base.metadata.create_all(engine)

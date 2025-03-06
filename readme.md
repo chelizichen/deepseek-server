@@ -22,7 +22,30 @@ $ conda create -n dpsk python=3.9
 
 然后使用pycharm 添加解释器，连接 miniconda/envs 下的虚拟环境
 
+### MYSQL8
 
+````shell
+docker run --name=mysql8 \
+-e MYSQL_ROOT_PASSWORD=lzy20211121 \
+-v /path/to/mysql8/data:/var/lib/mysql \
+-p 13306:3306 \
+--restart=always \
+-d docker.1ms.run/library/mysql:8.0.33
+````
+- jdbc 链接是需要这样指定参数
+- jdbc:mysql://124.220.19.199:13306?allowPublicKeyRetrieval=true&useSSL=false
+
+--name=mysql8：为容器指定一个名称（如 mysql8）。
+
+-e MYSQL_ROOT_PASSWORD=<你的root密码>：设置 MySQL 的 root 用户密码。
+
+-v /path/to/mysql8/data:/var/lib/mysql：将宿主机的目录挂载到容器的 MySQL 数据目录，确保数据持久化。
+
+-p 13306:3306：将宿主机的 13306 端口映射到容器的 3306 端口（避免与现有 MySQL 端口冲突）。
+
+--restart=always：确保容器在重启后自动启动。
+
+-d：以后台模式运行容器。
 
 ### Source
 
