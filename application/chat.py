@@ -4,6 +4,7 @@ from datetime import datetime
 from service.service import chat_service
 from application.const import new_uuid
 import application.const as const
+from utils import wrap_response
 
 
 def create_chat_router(app):
@@ -41,7 +42,7 @@ def create_chat_router(app):
             now,
             session_id
         )
-        return chat_rsp
+        return wrap_response(chat_rsp)
 
     @app.post("/sessions/save")
     async def save_session(data: dict):
@@ -51,7 +52,7 @@ def create_chat_router(app):
         print(f"invoke >> save_session | user_id {user_id} | name {name}")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_info = add_session(user_id, name, now)
-        return add_info
+        return wrap_response(add_info)
 
     @app.post("/prompts/save")
     async def save_prompts(data: dict):
@@ -61,7 +62,7 @@ def create_chat_router(app):
         # 从传入的 JSON 数据中提取所需信息
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         prompt = add_prompt(name, 0, user_id, now)
-        return prompt
+        return wrap_response(prompt)
 
     @app.post("/chat_prompts/save")
     async def save_prompts(data: dict):
@@ -70,7 +71,8 @@ def create_chat_router(app):
         prompt_id = data.get("prompt_id")
         print(f"invoke >> save_prompts | session_id {session_id} | prompt_id {prompt_id} | user_id {user_id}")
         prompt = add_chat_prompt(session_id, user_id, prompt_id)
-        return prompt
+        return wrap_response(prompt)
+
 
     @app.get("/users/save")
     async def test_save(data: dict):
@@ -80,14 +82,15 @@ def create_chat_router(app):
         phone = data.get("phone")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         user = add_user(name, email, password, phone, now)
-        return user
+        return wrap_response(user)
+
 
     @app.get("/users/sessions/list")
     async def get_user_sessions_list(user_id: int):
         print(f"invoke >> get_user_sessions_list | user_id {user_id}")
         session_list = get_sessions_by_user_id(user_id)
         print(f"user_id {user_id} session_list {session_list}")
-        return session_list
+        return wrap_response(session_list)
 
     @app.post("/chat/change_answer_type")
     async def chat_change_type(data: dict):
@@ -100,4 +103,4 @@ def create_chat_router(app):
         if answer_type not in [const.answer_type_dislike, const.answer_type_like]:
             return {"message": "invalid chat_type", "data": None}
         update_info = update_chat(chat_id, None, None, None, None, answer_type, None)
-        return {"message": "success", "data": update_info}
+        return wrap_response(update_info)

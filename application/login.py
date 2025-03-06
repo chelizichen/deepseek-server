@@ -1,6 +1,8 @@
 from storage.storage import user_login
 from fernet import Fernet
 
+from utils import wrap_response
+
 # import os
 # # 生成加密密钥
 # KEY_FILE = 'encryption_key.key'
@@ -40,7 +42,7 @@ def decrypt_password(encrypted_password):
 def create_login_router(app):
     @app.get("/greet")
     async def root():
-        return {"message": "Hello World"}
+        return wrap_response("hello world")
 
     @app.post("/user/login")
     async def login(data: dict):
@@ -51,7 +53,7 @@ def create_login_router(app):
         if user is not None:
             de_password = decrypt_password(user.password.encode())
             if de_password == password:
-                return {"message": "Login successful", "user": user}
-            return {"message": "Login failed, please check your email and password"}
+                return wrap_response(user)
+            return wrap_response(False,"Login failed, please check your email and password",-1)
         else:
-            return {"message": "Login failed, please check your email and password"}
+            return wrap_response(False,"Login failed, please check your email and password",-1)

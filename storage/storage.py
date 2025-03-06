@@ -321,7 +321,7 @@ def get_session(session_id):
 def get_sessions_by_user_id(user_id):
     session = Session()
     try:
-        session_record = session.query(Sessions).filter_by(user_id=user_id).all()
+        session_record = session.query(Sessions).filter_by(create_user_id=user_id).all()
         return session_record
     except Exception as e:
         raise e
