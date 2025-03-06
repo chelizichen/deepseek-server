@@ -13,8 +13,8 @@ llm = ChatDeepSeekAI(
 )
 
 
-def process_messages_and_stream(llm, messages):
-    stream = llm.stream(messages)
+def process_messages_and_stream(llm_service, messages):
+    stream = llm_service.stream(messages)
     full = next(stream)
     for chunk in stream:
         full += chunk

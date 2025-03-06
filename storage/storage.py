@@ -88,15 +88,17 @@ def add_chat(user_id, question, answer, typ, answer_type, create_time, session_i
     session.close()
     return chat_dict
 
-def get_chat_history_by_session_id(session_id:int):
+
+def get_chat_history_by_session_id(session_id: int):
     session = Session()
     chats = session.query(Chats).filter_by(session_id=session_id).all()
     session.close()
     return chats
 
-def get_prompts_by_session_id(session_id:int):
+
+def get_prompts_by_session_id(session_id: int):
     session = Session()
-    prompts = session.query(ChatsPrompts,Prompts.name).join(
+    prompts = session.query(ChatsPrompts, Prompts.name).join(
         Prompts, ChatsPrompts.prompt_id == Prompts.id, isouter=True
     ).filter(ChatsPrompts.session_id == session_id).all()
     session.close()
@@ -112,6 +114,7 @@ def get_prompts_by_session_id(session_id:int):
         result.append(chat_prompt_dict)
     return result
 
+
 def get_chat(chat_id):
     session = Session()
     chat = session.query(Chats).filter_by(id=chat_id).first()
@@ -126,7 +129,7 @@ def get_chat_by_session_id(session_id):
     return chats
 
 
-def update_chat(chat_id, user_id=None, question=None, answer=None, type=None, answer_type=None, create_time=None):
+def update_chat(chat_id, user_id=None, question=None, answer=None, chat_type=None, answer_type=None, create_time=None):
     session = Session()
     chat = session.query(Chats).filter_by(id=chat_id).first()
     if chat:
@@ -136,8 +139,8 @@ def update_chat(chat_id, user_id=None, question=None, answer=None, type=None, an
             chat.question = question
         if answer:
             chat.answer = answer
-        if type:
-            chat.type = type
+        if chat_type:
+            chat.type = chat_type
         if answer_type:
             chat.answer_type = answer_type
         if create_time:
@@ -315,6 +318,17 @@ def get_session(session_id):
         session.close()
 
 
+def get_sessions_by_user_id(user_id):
+    session = Session()
+    try:
+        session_record = session.query(Sessions).filter_by(user_id=user_id).all()
+        return session_record
+    except Exception as e:
+        raise e
+    finally:
+        session.close()
+
+
 # 更新会话记录
 def update_session(session_id, create_user_id=None, name=None, chat_id=None, create_time=None):
     session = Session()
@@ -362,4 +376,20 @@ def delete_session(session_id):
 1. create_session
 2. create prompts_map with session 
 3. chat 
+"""
+
+"""
+****************************** LOGIN **************************
+"""
+
+
+def user_login(email):
+    session = Session()
+    user = session.query(Users).filter_by(email=email).first()
+    session.close()
+    return user
+
+
+"""
+****************************** LOGIN **************************
 """
