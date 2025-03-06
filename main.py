@@ -1,12 +1,16 @@
+import os
+
 from conf import sgrid_config
 from application import app
 import uvicorn
 from storage import test_add_chat_to_db
 
-def test():
-    test_add_chat_to_db()
-
-test()
+# def test():
+#     if os.environ.get("SGRID_CONFIG"):
+#         return True
+#     test_add_chat_to_db()
+#
+# test()
 
 def main():
     # 解析命令行参数

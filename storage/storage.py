@@ -1,4 +1,9 @@
 from conf.db import Session, Sessions, Users, Chats, Prompts, ChatsPrompts
+import application.const as const
+
+# 倒序实现方式
+# from sqlalchemy import desc
+# order_by(desc(Chats.id))
 
 """
 ****************************** USER **************************
@@ -89,9 +94,13 @@ def add_chat(user_id, question, answer, typ, answer_type, create_time, session_i
     return chat_dict
 
 
-def get_chat_history_by_session_id(session_id: int):
+def get_chat_history_by_session_id(session_id: int) -> list[Chats]:
     session = Session()
-    chats = session.query(Chats).filter_by(session_id=session_id).all()
+    chats = session.query(Chats).order_by(Chats.id).filter(
+        Chats.session_id == session_id,
+        Chats.answer_type != const.answer_type_dislike,
+        Chats.type != const.chat_type_abstract
+    ).all()
     session.close()
     return chats
 

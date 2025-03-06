@@ -18,6 +18,25 @@ def create_chat_router(app):
         chat_msg = data.get("chat_msg")
         session_id = data.get("session_id")
         user_id = data.get("user_id")
+        chat_type = data.get("chat_type")
+        if chat_type is not None:
+            if chat_type == const.chat_type_abstract:
+                prompts = data.get("prompts")
+                history = data.get("history")
+                chat_rsp = chat_service(chat_msg, prompts, False, history)
+                answer = chat_rsp.get("answer")
+                question = chat_rsp.get("question")
+                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                add_chat(
+                    user_id,
+                    question,
+                    answer,
+                    const.chat_type_abstract,
+                    const.answer_type_like,
+                    now,
+                    session_id
+                )
+                return
 
         print(f"invoke [chat] {uuid} >> chat_msg  {chat_msg} | session_id {session_id} | user_id {user_id}")
         history = get_chat_history_by_session_id(session_id)
@@ -42,7 +61,35 @@ def create_chat_router(app):
             now,
             session_id
         )
+
+        # 生成摘要
+        history.reverse()
+        type_list = []
+        for his_chat in history:
+            if his_chat.type == const.chat_type_abstract:
+                break
+            type_list.append(his_chat.type)
+        history.reverse()
+        # 如果当前聊天记录大于3条，则生成摘要
+        print(f" {uuid} type_list length {len(type_list)}")
+        if len(type_list) >= 3:
+            print(f" {uuid} create abstract")
+            abstract_req = dict()
+            abstract_req["chat_type"] = const.chat_type_abstract
+            abstract_req["chat_msg"] = "请将上述的内容进行总结"
+            abstract_req["user_id"] = data.get("user_id")
+            abstract_req["session_id"] = data.get("session_id")
+            abstract_req["history"] = history
+            abstract_req["prompts"] = prompts
+            await chat(abstract_req)
+            return wrap_response(chat_rsp)
         return wrap_response(chat_rsp)
+
+    @app.get("/get_chat_history")
+    def get_chat_history(session_id: int):
+        # 从数据库中获取聊天记录
+        chat_history = get_chat_history_by_session_id(session_id)
+        return wrap_response(chat_history)
 
     @app.post("/sessions/save")
     async def save_session(data: dict):
@@ -73,7 +120,6 @@ def create_chat_router(app):
         prompt = add_chat_prompt(session_id, user_id, prompt_id)
         return wrap_response(prompt)
 
-
     @app.get("/users/save")
     async def test_save(data: dict):
         name = data.get("name")
@@ -83,7 +129,6 @@ def create_chat_router(app):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         user = add_user(name, email, password, phone, now)
         return wrap_response(user)
-
 
     @app.get("/users/sessions/list")
     async def get_user_sessions_list(user_id: int):
