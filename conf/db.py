@@ -65,6 +65,7 @@ class Sessions(Base):
     create_user_id = Column(Integer)
     name = Column(String(255))
     create_time = Column(DATETIME)
+    status = Column(Integer)
 
 
 class Prompts(Base):
@@ -90,6 +91,15 @@ class ChatsPrompts(Base):
     user_id = Column(Integer)
     prompt_id = Column(Integer)
 
+class ChatLock(Base):
+    __tablename__ = 'chat_lock'
+    """
+    聊天锁表
+    status 1 为锁定，0 为未锁定
+    """
+    id = Column(Integer, primary_key=True)
+    session_id = Column(Integer)
+    chat_status = Column(Integer)
 
 # 创建表
 if os.environ.get("SGRID_CONFIG") is None:

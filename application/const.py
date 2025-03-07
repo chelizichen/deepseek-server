@@ -15,7 +15,15 @@ answer_type_common = 1
 answer_type_like = 2
 answer_type_dislike = 3
 
+session_delete = -1
+
+# lock
+chat_lock = 1
+chat_unlock = 2
+
+# 定义命名空间
 NAME_SPACE = "chat"
+
 
 def new_uuid():
     namespace = uuid.NAMESPACE_DNS

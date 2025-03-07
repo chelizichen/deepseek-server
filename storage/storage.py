@@ -1,5 +1,6 @@
-from conf.db import Session, Sessions, Users, Chats, Prompts, ChatsPrompts
+from conf.db import Session, Sessions, Users, Chats, Prompts, ChatsPrompts, ChatLock
 import application.const as const
+from sqlalchemy import text
 
 # 倒序实现方式
 # from sqlalchemy import desc
@@ -101,6 +102,24 @@ def get_chat_history_by_session_id(session_id: int) -> list[Chats]:
         Chats.answer_type != const.answer_type_dislike,
         Chats.type != const.chat_type_abstract
     ).all()
+    session.close()
+    return chats
+
+
+def get_chat_history_inference_by_session_id(session_id: int) -> list[Chats]:
+    session = Session()
+    chats = session.execute(text(f"""
+SELECT c2.*
+FROM chats c2
+WHERE 
+1 = 1
+AND c2.id >= IFNULL(
+    (SELECT MAX(c.id) FROM chats c WHERE c.session_id = {session_id} AND c.type = {const.chat_type_abstract}),
+    0
+)
+AND c2.session_id = {session_id}
+AND c2.answer_type != {const.answer_type_dislike};
+        """)).all()
     session.close()
     return chats
 
@@ -366,10 +385,12 @@ def delete_session(session_id):
     session = Session()
     try:
         session_record = session.query(Sessions).filter_by(id=session_id).first()
+        s_id = 0
         if session_record:
-            session.delete(session_record)
+            session_record.status = const.session_delete
+            s_id = session_record.id
             session.commit()
-        return session_record
+        return s_id
     except Exception as e:
         session.rollback()
         raise e
@@ -402,3 +423,66 @@ def user_login(email):
 """
 ****************************** LOGIN **************************
 """
+
+
+# 新增 ChatLock 记录
+def add_chat_lock(session_id, status):
+    session = Session()
+    try:
+        chat_lock = ChatLock(session_id=session_id, chat_status=status)
+        session.add(chat_lock)
+        session.commit()
+        return chat_lock
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+# 根据 id 删除 ChatLock 记录
+def delete_chat_lock(session_id):
+    session = Session()
+    try:
+        chat_lock = session.query(ChatLock).filter_by(session_id=session_id).first()
+        if chat_lock:
+            session.delete(chat_lock)
+            session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+# 根据 id 更新 ChatLock 记录
+def update_chat_lock(session_id=None, status=None) -> bool:
+    session = Session()
+    try:
+        chat_lock = session.query(ChatLock).filter_by(session_id=session_id).first()
+        if status == const.chat_lock & chat_lock.chat_status == const.chat_lock:
+            return False
+        if chat_lock:
+            if session_id is not None:
+                chat_lock.session_id = session_id
+            if status is not None:
+                chat_lock.chat_status = status
+            session.commit()
+        return True
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
+
+
+# 根据 session_id 查询 ChatLock 记录
+def get_chat_locks_by_session_id(session_id):
+    session = Session()
+    try:
+        chat_locks = session.query(ChatLock).filter_by(session_id=session_id).all()
+        return chat_locks
+    except Exception as e:
+        raise e
+    finally:
+        session.close()

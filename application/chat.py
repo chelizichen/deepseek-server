@@ -1,5 +1,6 @@
 from storage.storage import add_user, get_chat_history_by_session_id, get_prompts_by_session_id, add_chat, add_session, \
-    add_prompt, add_chat_prompt, get_sessions_by_user_id, update_chat
+    add_prompt, add_chat_prompt, get_sessions_by_user_id, update_chat, get_chat_history_inference_by_session_id, \
+    update_chat_lock, delete_session, add_chat_lock
 from datetime import datetime
 from service.service import chat_service
 from application.const import new_uuid
@@ -10,80 +11,86 @@ from utils import wrap_response
 def create_chat_router(app):
     @app.post("/chat")
     async def chat(data: dict):
-        uuid = new_uuid()
         """
         1. 首次进来，通过提示词进行初始化聊天
         2. 非首次进来，通过聊天记录拼接上下文进行聊天
         """
+        uuid = new_uuid()
         chat_msg = data.get("chat_msg")
         session_id = data.get("session_id")
         user_id = data.get("user_id")
+        if chat_msg is None or session_id is None or user_id is None:
+            return wrap_response(data=None, message="参数错误", code=-1)
+        is_lock_success = update_chat_lock(session_id=session_id, status=const.chat_lock)
+        if is_lock_success is False:
+            return wrap_response(data=None, message="请等待上一个问题回答完成", code=-1)
         chat_type = data.get("chat_type")
-        if chat_type is not None:
-            if chat_type == const.chat_type_abstract:
-                prompts = data.get("prompts")
-                history = data.get("history")
+        try:
+            if chat_type is not None:
+                if chat_type == const.chat_type_abstract:
+                    prompts = data.get("prompts")
+                    history = data.get("history")
+                    chat_rsp = chat_service(chat_msg, prompts, False, history)
+                    answer = chat_rsp.get("answer")
+                    question = chat_rsp.get("question")
+                    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    add_chat(
+                        user_id,
+                        question,
+                        answer,
+                        const.chat_type_abstract,
+                        const.answer_type_like,
+                        now,
+                        session_id
+                    )
+                    return
+            print(f"invoke [chat] {uuid} >> chat_msg  {chat_msg} | session_id {session_id} | user_id {user_id}")
+            history = get_chat_history_inference_by_session_id(session_id)
+            print(f"history {uuid} >>  {history}")
+            prompts = get_prompts_by_session_id(session_id)
+            print(f"prompts {uuid} >>  {prompts}")
+            is_init = len(history) == 0
+            print(f"is_init {uuid} >>  {is_init}")
+            if is_init:
+                chat_rsp = chat_service(chat_msg, prompts, True)
+            else:
                 chat_rsp = chat_service(chat_msg, prompts, False, history)
-                answer = chat_rsp.get("answer")
-                question = chat_rsp.get("question")
-                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                add_chat(
-                    user_id,
-                    question,
-                    answer,
-                    const.chat_type_abstract,
-                    const.answer_type_like,
-                    now,
-                    session_id
-                )
-                return
-
-        print(f"invoke [chat] {uuid} >> chat_msg  {chat_msg} | session_id {session_id} | user_id {user_id}")
-        history = get_chat_history_by_session_id(session_id)
-        print(f"history {uuid} >>  {history}")
-        prompts = get_prompts_by_session_id(session_id)
-        print(f"prompts {uuid} >>  {prompts}")
-        is_init = len(history) == 0
-        print(f"is_init {uuid} >>  {is_init}")
-        if is_init:
-            chat_rsp = chat_service(chat_msg, prompts, True)
-        else:
-            chat_rsp = chat_service(chat_msg, prompts, False, history)
-        answer = chat_rsp.get("answer")
-        question = chat_rsp.get("question")
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        add_chat(
-            user_id,
-            question,
-            answer,
-            const.chat_type_common,
-            const.answer_type_common,
-            now,
-            session_id
-        )
-
-        # 生成摘要
-        history.reverse()
-        type_list = []
-        for his_chat in history:
-            if his_chat.type == const.chat_type_abstract:
-                break
-            type_list.append(his_chat.type)
-        history.reverse()
-        # 如果当前聊天记录大于3条，则生成摘要
-        print(f" {uuid} type_list length {len(type_list)}")
-        if len(type_list) >= 3:
-            print(f" {uuid} create abstract")
-            abstract_req = dict()
-            abstract_req["chat_type"] = const.chat_type_abstract
-            abstract_req["chat_msg"] = "请将上述的内容进行总结"
-            abstract_req["user_id"] = data.get("user_id")
-            abstract_req["session_id"] = data.get("session_id")
-            abstract_req["history"] = history
-            abstract_req["prompts"] = prompts
-            await chat(abstract_req)
+            answer = chat_rsp.get("answer")
+            question = chat_rsp.get("question")
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            add_chat(
+                user_id,
+                question,
+                answer,
+                const.chat_type_common,
+                const.answer_type_common,
+                now,
+                session_id
+            )
+            comm_list_length = 0
+            for item in history:
+                if item.type == const.chat_type_common:
+                    comm_list_length += 1
+            print(f"comm_list_length {uuid} >>  {comm_list_length}")
+            # 生成摘要
+            print(f" {uuid} type_list length {comm_list_length}")
+            if comm_list_length >= 3:
+                print(f" {uuid} create abstract")
+                abstract_req = dict()
+                abstract_req["chat_type"] = const.chat_type_abstract
+                abstract_req["chat_msg"] = "请将上述的内容进行总结"
+                abstract_req["user_id"] = data.get("user_id")
+                abstract_req["session_id"] = data.get("session_id")
+                abstract_req["history"] = history
+                abstract_req["prompts"] = prompts
+                await chat(abstract_req)
+                return wrap_response(chat_rsp)
             return wrap_response(chat_rsp)
-        return wrap_response(chat_rsp)
+        except Exception as e:
+            print(f"invoke [chat] {uuid} >> error {e}")
+            return wrap_response(data=None, message=str(e), code=-1)
+        finally:
+            update_chat_lock(session_id=session_id, status=const.chat_unlock)
 
     @app.get("/get_chat_history")
     def get_chat_history(session_id: int):
@@ -99,6 +106,7 @@ def create_chat_router(app):
         print(f"invoke >> save_session | user_id {user_id} | name {name}")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_info = add_session(user_id, name, now)
+        add_chat_lock(session_id=add_info["session_id"], status=const.chat_unlock)
         return wrap_response(add_info)
 
     @app.post("/prompts/save")
@@ -149,3 +157,9 @@ def create_chat_router(app):
             return {"message": "invalid chat_type", "data": None}
         update_info = update_chat(chat_id, None, None, None, None, answer_type, None)
         return wrap_response(update_info)
+
+    @app.get("/sessions/delete")
+    async def del_session(session_id: int):
+        print(f"invoke >> delete_session | session_id {session_id}")
+        rsp = delete_session(session_id)
+        return wrap_response(data=rsp)
