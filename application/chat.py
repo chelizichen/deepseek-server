@@ -106,7 +106,7 @@ def create_chat_router(app):
         print(f"invoke >> save_session | user_id {user_id} | name {name}")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_info = add_session(user_id, name, now)
-        add_chat_lock(session_id=add_info["session_id"], status=const.chat_unlock)
+        add_chat_lock(session_id=add_info["id"], status=const.chat_unlock)
         return wrap_response(add_info)
 
     @app.post("/prompts/save")
