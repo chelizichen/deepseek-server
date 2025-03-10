@@ -2,6 +2,7 @@ import os
 import time
 
 from sqlalchemy import create_engine, Column, Integer, String, TEXT, DATETIME
+from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -36,8 +37,8 @@ class Chats(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer)
-    question = Column(TEXT)
-    answer = Column(TEXT)
+    question = Column(LONGTEXT)
+    answer = Column(LONGTEXT)
     """
     type 为 记录类型
     1. 为普通类型，即 用户正常提问
@@ -91,6 +92,7 @@ class ChatsPrompts(Base):
     user_id = Column(Integer)
     prompt_id = Column(Integer)
 
+
 class ChatLock(Base):
     __tablename__ = 'chat_lock'
     """
@@ -100,6 +102,7 @@ class ChatLock(Base):
     id = Column(Integer, primary_key=True)
     session_id = Column(Integer)
     chat_status = Column(Integer)
+
 
 # 创建表
 if os.environ.get("SGRID_CONFIG") is None:

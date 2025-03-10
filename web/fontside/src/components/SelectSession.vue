@@ -22,6 +22,7 @@
             :autosize="{ minRows: 4, maxRows: 20 }"
             type="textarea"
             placeholder="Input your question here"
+            class="bg-gray-400"
           >
           </el-input>
         </div>
@@ -63,7 +64,7 @@ watch(
 
 function getChatListBySessionId(id: number) {
   getChatHistory(id).then((res) => {
-    chatList.value = res.data.map((v) => {
+    chatList.value = res.data.map((v:any) => {
       v.answer = md.render(v.answer); //传入
       console.log("v.answer", v.answer);
       return v;

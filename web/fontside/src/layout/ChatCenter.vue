@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-screen">
     <div class="w-1/6 bg-gray-100 overflow-y-auto">
-      <h2 class="text-lg font-bold p-4 cursor-pointer" @click="createSession">SgridChat</h2>
+      <h2 class="text-lg font-bold p-4 cursor-pointer" @click="createSession">DeepSeek</h2>
       <ul>
         <li v-for="session in sessions" :key="session.id" class="p-4 hover:bg-gray-200 cursor-pointer"
             @click="handleSessionClick(session.id)">

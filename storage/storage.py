@@ -1,3 +1,4 @@
+from application.const import session_delete
 from conf.db import Session, Sessions, Users, Chats, Prompts, ChatsPrompts, ChatLock
 import application.const as const
 from sqlalchemy import text
@@ -323,7 +324,8 @@ def add_session(create_user_id, name, create_time):
         new_session = Sessions(
             create_user_id=create_user_id,
             name=name,
-            create_time=create_time
+            create_time=create_time,
+            status=0
         )
         session.add(new_session)
         session.commit()
@@ -331,7 +333,8 @@ def add_session(create_user_id, name, create_time):
             "id": new_session.id,
             "create_user_id": new_session.create_user_id,
             "name": new_session.name,
-            "create_time": new_session.create_time
+            "create_time": new_session.create_time,
+            "status": new_session.status
         }
         return session_info
     except Exception as e:
@@ -356,8 +359,10 @@ def get_session(session_id):
 def get_sessions_by_user_id(user_id):
     session = Session()
     try:
-        session_record = session.query(Sessions).filter_by(Session.create_user_id == user_id,
-                                                           Session.status != -1).all()
+        session_record = session.query(Sessions).filter(
+            Sessions.create_user_id == user_id,
+            Sessions.status != session_delete
+        ).all()
         return session_record
     except Exception as e:
         raise e
