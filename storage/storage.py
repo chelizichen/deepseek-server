@@ -220,6 +220,13 @@ def get_prompt(prompt_id):
     return prompt
 
 
+def get_prompt_list():
+    session = Session()
+    prompt = session.query(Prompts).all()
+    session.close()
+    return prompt
+
+
 def update_prompt(prompt_id, name=None, use_count=None, create_user_id=None, create_time=None):
     session = Session()
     prompt = session.query(Prompts).filter_by(id=prompt_id).first()

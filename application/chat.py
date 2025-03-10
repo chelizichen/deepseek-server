@@ -1,6 +1,6 @@
 from storage.storage import add_user, get_chat_history_by_session_id, get_prompts_by_session_id, add_chat, add_session, \
     add_prompt, add_chat_prompt, get_sessions_by_user_id, update_chat, get_chat_history_inference_by_session_id, \
-    update_chat_lock, delete_session, add_chat_lock
+    update_chat_lock, delete_session, add_chat_lock, get_prompt, get_prompt_list
 from datetime import datetime
 from service.service import chat_service
 from application.const import new_uuid
@@ -123,10 +123,11 @@ def create_chat_router(app):
     async def save_prompts(data: dict):
         session_id = data.get("session_id")
         user_id = data.get("user_id")
-        prompt_id = data.get("prompt_id")
-        print(f"invoke >> save_prompts | session_id {session_id} | prompt_id {prompt_id} | user_id {user_id}")
-        prompt = add_chat_prompt(session_id, user_id, prompt_id)
-        return wrap_response(prompt)
+        prompt_ids = data.get("prompt_ids")
+        print(f"invoke >> save_prompts | session_id {session_id} | prompt_id {prompt_ids} | user_id {user_id}")
+        for prompt_id in prompt_ids:
+            add_chat_prompt(session_id, user_id, prompt_id)
+        return wrap_response(None)
 
     @app.get("/users/save")
     async def test_save(data: dict):
@@ -163,3 +164,10 @@ def create_chat_router(app):
         print(f"invoke >> delete_session | session_id {session_id}")
         rsp = delete_session(session_id)
         return wrap_response(data=rsp)
+
+    @app.get("/prompts/list")
+    async def get_prompts():
+        print(f"invoke >> get_prompts ")
+        prompts = get_prompt_list()
+        print(f" prompts {prompts}")
+        return wrap_response(prompts)
