@@ -37,7 +37,7 @@ export function setToken(token: string) {
     localStorage.setItem(TOKEN, token);
 }
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _, next) => {
     const token = getToken(); // 获取 token
     console.log('token', token); // 打印 token（调试用）
 

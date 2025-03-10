@@ -1,7 +1,7 @@
 // src/api/index.ts
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8081'; // 根据实际情况修改
+const API_BASE_URL = import.meta.env.VITE_API_URL; // 根据实际情况修改
 
 const httpInstance = axios.create({
     baseURL: API_BASE_URL,

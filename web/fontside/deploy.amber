@@ -1,0 +1,16 @@
+     fun build(){
+        $ npm run build $ failed{
+            echo "build failed"
+        }
+     }
+
+     fun release(){
+        $ npm run release $ failed{
+            echo "release failed"
+        }
+     }
+
+     main(args){
+        build()
+        release()
+     }

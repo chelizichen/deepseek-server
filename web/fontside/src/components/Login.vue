@@ -70,7 +70,7 @@
               </h3>
             </div>
           </div>
-          <form @Submit="event.preventDefault()" class="space-y-5">
+          <form @Submit="$event.preventDefault()" class="space-y-5">
             <div>
               <label class="font-medium">Email</label>
               <input

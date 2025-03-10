@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-full">
     <div class="h-5/6 relative overflow-scroll pb-12">
-      <div v-for="item in chatList" :key="item">
+      <div v-for="item in chatList" :key="item.question">
         <div class="flex justify-end ">
           <div class="p-4 rounded my-4 bg-blue-50 text-gray-950 w-fit">
             <p class="text-right">{{ item.question }}</p>
