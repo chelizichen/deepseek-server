@@ -65,6 +65,8 @@
 <script lang="ts" setup>
 import {onMounted, ref} from 'vue';
 import {getPromptsList, saveChatPrompts, savePrompts, saveSession} from '../api';
+import {ElMessage} from "element-plus";
+import {reloadPage} from "../store";
 
 // 会话提示词
 const prompt = ref('');
@@ -98,10 +100,17 @@ const handleCreateSession = async () => {
   try {
     // 可以根据需要将 selectedPrompts 也传递给后端
     const session = await saveSession(userId.value, prompt.value);
+    if (session.code) {
+      ElMessage.error('创建会话失败|' + session.message);
+      return
+    }
     const response = await saveChatPrompts(session.data.id, userId.value, selectedPrompts.value.map((item) => item.id));
     console.log('创建会话成功 session :', session);
     console.log('创建会话成功 response:', response);
+    ElMessage.success('创建会话成功');
+    reloadPage()
   } catch (error) {
+    ElMessage.error('创建会话失败|' + error);
     console.error('创建会话失败:', error);
   }
 };
@@ -110,7 +119,7 @@ const handleCreateSession = async () => {
 const promptText = ref("")
 
 function savePrompt() {
-  savePrompts(userId.value, promptText.value).then(()=>{
+  savePrompts(userId.value, promptText.value).then(() => {
     getPromptOptions()
   })
 }

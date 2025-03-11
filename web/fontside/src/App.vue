@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import {reloadState} from './store'
+
 </script>
 
 <template>
   <div>
-    <router-view></router-view>
+    <router-view v-if="reloadState"></router-view>
   </div>
 </template>
 
