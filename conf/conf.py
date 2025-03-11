@@ -1,10 +1,12 @@
 import os
+from typing_extensions import Union
 
 from yaml import load, FullLoader, parse
 from pathlib import Path
 
 
 class SgridConfig:
+    config : Union[dict, None]
     def __init__(self, config_file="sgrid.yml"):
         self.config = None
         self.config_file = config_file
@@ -23,20 +25,18 @@ class SgridConfig:
         #   db: mysql+pymysql://root:lzy20211121@124.220.19.199:3306/t_ai
         # """
         # os.environ.setdefault("SGRID_CONFIG", yaml_text)
-        if os.environ.get("SGRID_CONFIG"):
+        sgrid_conf = os.environ.get("SGRID_CONFIG")
+        if sgrid_conf:
             print("Sgrid-Python[SGRID_CONFIG] Prod", True)
-            conf = os.environ.get("SGRID_CONFIG")
-            print("Sgrid-Python[conf]", conf)
+            print("Sgrid-Python[conf]", sgrid_conf)
             try:
-                # bug修复：使用 load 函数代替 parse 函数
-                config = load(conf, Loader=FullLoader)
+                config = load(sgrid_conf, Loader=FullLoader)
                 self.config = config
                 print("Sgrid-Python[self.config]", self.config)
             except Exception as e:
                 print(f"Sgrid-Python[Error] Failed to parse SGRID_CONFIG: {e}")
             return
         cwd = os.getcwd()
-        # bug修复：将 cwd 转换为 Path 对象
         filepath = Path(cwd).joinpath(self.config_file)
         print("Sgrid-Python[read conf path]", filepath)
         with open(filepath, encoding="utf-8") as f:
@@ -61,8 +61,9 @@ class SgridConfig:
         return current
 
     def get_port(self):
-        if os.environ.get("SGRID_TARGET_PORT"):
-            return int(os.environ.get("SGRID_TARGET_PORT"))
-        return int(self.config.get("server.port", 8080))
-
-
+        port = os.environ.get("SGRID_TARGET_PORT")
+        if port:
+            return int(port)
+        if self.config is not None:
+            return int(self.config.get("server.port", 8080))
+        return 8080

@@ -1,6 +1,7 @@
 from langchain_deepseek import ChatDeepSeekAI
 from storage.storage import add_chat, get_chat
 from conf import sgrid_config
+from typing_extensions import Union
 
 api_key = sgrid_config.get("config.api_key")
 print("api_key", api_key)
@@ -22,7 +23,7 @@ def process_messages_and_stream(llm_service, messages):
     return res_answer
 
 
-def chat_service(req_question: str, prompts: list, is_init=False, history=None):
+def chat_service(req_question: str, prompts: list, is_init=False, history=Union[list, None]):
     prompts_tag = ""
     for prompt in prompts:
         prompts_tag += "[" + prompt.get("prompt_name") + "] "
@@ -31,11 +32,12 @@ def chat_service(req_question: str, prompts: list, is_init=False, history=None):
     if is_init:
         messages.append(("human", req_question))
     else:
-        for chat in history:
-            messages.append(("human", chat.question))
-            messages.append(("ai", chat.answer))
-        messages.append(("human", req_question))
-        print(" chat_service >>  messages ", messages)
+        if history is not None and isinstance(history, list):
+            for chat in history:
+                messages.append(("human", chat.question))
+                messages.append(("ai", chat.answer))
+            messages.append(("human", req_question))
+            print(" chat_service >>  messages ", messages)
     res_answer = process_messages_and_stream(llm, messages)
 
     return {

@@ -12,7 +12,7 @@ from utils import wrap_response
 
 
 def create_chat_router(app: FastAPI):
-    @app.post("/chat/")
+    @app.post("/chat")
     async def chat(data: ChatDTO):
         """
         1. 首次进来，通过提示词进行初始化聊天
@@ -32,6 +32,8 @@ def create_chat_router(app: FastAPI):
             if chat_type is not None:
                 if chat_type == const.chat_type_abstract:
                     prompts = data.prompts
+                    if prompts is None:
+                        prompts = []
                     history = data.history
                     chat_rsp = chat_service(chat_msg, prompts, False, history)
                     answer = chat_rsp.get("answer")
@@ -96,13 +98,13 @@ def create_chat_router(app: FastAPI):
         finally:
             update_chat_lock(session_id=session_id, status=const.chat_unlock)
 
-    @app.get("/get_chat_history/")
+    @app.get("/get_chat_history")
     def get_chat_history(session_id: int):
         # 从数据库中获取聊天记录
         chat_history = get_chat_history_by_session_id(session_id)
         return wrap_response(chat_history)
 
-    @app.post("/sessions/save/")
+    @app.post("/sessions/save")
     async def save_session(data: SessionDTO):
         # 从传入的 JSON 数据中提取所需信息
         user_id = data.user_id
