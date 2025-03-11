@@ -8,3 +8,4 @@ config:
   api_key: sk-f0e1e656ba294b98a7ed892781df1ce9
 #  db: mysql+pymysql://root:lzy20211121@124.220.19.199:13306/t_ai
   db: mysql+pymysql://root:123456@127.0.0.1:3306/t_ai
+cors_origins: ["http://127.0.0.1:8082"]

@@ -3,16 +3,8 @@ import time
 
 from sqlalchemy import create_engine, Column, Integer, String, TEXT, DATETIME
 from sqlalchemy.dialects.mysql import LONGTEXT
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 
-from conf import sgrid_config
-
-# 配置数据库连接
-engine = create_engine(sgrid_config.get("config.db"),
-                       pool_pre_ping=True, isolation_level="REPEATABLE READ")
-Session = sessionmaker(bind=engine)
-Base = declarative_base()
+from conf import Base, engine
 
 
 # 定义用户模型

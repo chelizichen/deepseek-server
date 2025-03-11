@@ -1,7 +1,9 @@
 from application.const import session_delete
-from conf.db import Session, Sessions, Users, Chats, Prompts, ChatsPrompts, ChatLock
+from conf import Session
 import application.const as const
 from sqlalchemy import text
+
+from storage.entity import Users, Chats, ChatsPrompts, Prompts, Sessions, ChatLock
 
 # 倒序实现方式
 # from sqlalchemy import desc

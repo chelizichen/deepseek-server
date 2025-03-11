@@ -1,3 +1,6 @@
+from fastapi import FastAPI
+
+from storage.dto import LoginDTO
 from storage.storage import user_login
 from fernet import Fernet
 
@@ -39,21 +42,23 @@ def decrypt_password(encrypted_password):
     return decrypted
 
 
-def create_login_router(app):
+
+
+def create_login_router(app: FastAPI):
     @app.get("/greet")
     async def root():
         return wrap_response("hello world")
 
     @app.post("/user/login")
-    async def login(data: dict):
-        email = data.get("email")
-        password = data.get("password")
+    async def login(data: LoginDTO):
+        email = data.email
+        password = data.password
         user = user_login(email)
-        print(f"email: {email}, password: {password}, user.password: {user.password}")
         if user is not None:
+            print(f"email: {email}, password: {password}, user.password: {user.password}")
             de_password = decrypt_password(user.password.encode())
             if de_password == password:
                 return wrap_response(user)
-            return wrap_response(False,"Login failed, please check your email and password",-1)
+            return wrap_response(False, "Login failed, please check your email and password", -1)
         else:
-            return wrap_response(False,"Login failed, please check your email and password",-1)
+            return wrap_response(False, "Login failed, please check your email and password", -1)
