@@ -1,22 +1,22 @@
 # 导入必要的模块和类
-from conf.conf import SgridConfig
+from conf.conf import SgridConfig, SgridApplication
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 # 定义初始化配置的函数
-def init_config():
+def init_application():
     # 创建 SgridConfig 实例
-    config = SgridConfig()
+    app = SgridApplication()
     # 初始化配置
-    config.init_config()
-    return config
+    app.init_config()
+    return app
 
 # 初始化配置
-sgrid_config = init_config()
+sgrid_application = init_application()
 
 # 获取数据库连接配置
-db_config = sgrid_config.get("config.db")
+db_config = sgrid_application.get("config.db")
 
 # 检查数据库配置是否存在
 if db_config:

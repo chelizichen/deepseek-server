@@ -90,6 +90,17 @@ export const getChatHistory = async (sessionId: number) => {
     }
 }
 
+export const getChatHistoryInferenceBySessionId = async (sessionId: number) => {
+    try {
+        const response = await httpInstance.get(`/get_chat_history_inference_by_session_id`, {params: {session_id: sessionId}});
+        console.log(response);
+        return response.data;
+    }   catch (error) {
+        console.error('获取会话失败:', error);
+        throw error;
+    }
+}
+
 export const chat = async (sessionId: number, chat_msg: string, user_id: number) => {
     try {
         const response = await httpInstance.post(`/chat`, {

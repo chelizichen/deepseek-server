@@ -109,9 +109,9 @@ def get_chat_history_by_session_id(session_id: int) -> list[Chats]:
     return chats
 
 
-def get_chat_history_inference_by_session_id(session_id: int) -> list[Chats]:
+def get_chat_history_inference_by_session_id(session_id: int) -> list[dict]:
     session = Session()
-    chats = session.execute(text(f"""
+    sql = f"""
 SELECT c2.*
 FROM chats c2
 WHERE 
@@ -121,8 +121,12 @@ AND c2.id >= IFNULL(
     0
 )
 AND c2.session_id = {session_id}
-AND c2.answer_type != {const.answer_type_dislike};
-        """)).all()
+AND c2.answer_type != {const.answer_type_dislike}
+order by c2.id asc;
+        """
+    print(f"sql: {sql}")
+    result_proxy = session.execute(text(sql)).all()
+    chats = [row._asdict() for row in result_proxy]  # Convert SQLAlchemy Row objects to dictionaries
     session.close()
     return chats
 

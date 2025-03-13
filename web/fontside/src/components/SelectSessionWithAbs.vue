@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { chat, getChatHistory } from "../api";
+import {chat, getChatHistory, getChatHistoryInferenceBySessionId} from "../api";
 import { ElMessage } from "element-plus";
 import MarkdownIt from "markdown-it";
 let md = new MarkdownIt();
@@ -64,7 +64,7 @@ watch(
 );
 
 function getChatListBySessionId(id: number) {
-  getChatHistory(id).then((res) => {
+  getChatHistoryInferenceBySessionId(id).then((res) => {
     chatList.value = res.data.map((v:any) => {
       v.answer = md.render(v.answer); //传入
       console.log("v.answer", v.answer);

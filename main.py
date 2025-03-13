@@ -1,9 +1,9 @@
-import os
-
-from conf import sgrid_config
 from application import app
-import uvicorn
+from conf import sgrid_application
+import asyncio
+
 from storage import test_add_chat_to_db
+
 
 # def test():
 #     if os.environ.get("SGRID_CONFIG"):
@@ -12,14 +12,9 @@ from storage import test_add_chat_to_db
 #
 # test()
 
-def main():
-    # 解析命令行参数
-    port = sgrid_config.get_port()
-    print(f"Sgrid-Python[load port] {port}")
-    # 启动 uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=port)
 
-
+async def main():
+    await sgrid_application.run(app=app)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

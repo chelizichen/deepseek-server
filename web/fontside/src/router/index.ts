@@ -6,6 +6,7 @@ import SelectPrompts from '../components/SelectPrompts.vue';
 import CreateChat from '../components/CreateChat.vue';
 import ChatCenter from "../layout/ChatCenter.vue";
 import SelectSession from "../components/SelectSession.vue";
+import SelectSessionWithAbs from "../components/SelectSessionWithAbs.vue";
 
 const routes: RouteRecordRaw[] = [
     {path: '/login', component: Login},
@@ -17,6 +18,7 @@ const routes: RouteRecordRaw[] = [
             {path: 'select-prompts', component: SelectPrompts},
             {path: 'create-chat', component: CreateChat},
             {path: 'select-session', component: SelectSession},
+            {path: 'select-session-abs', component: SelectSessionWithAbs},
         ]
     }
 

@@ -1,4 +1,9 @@
 import os
+import signal
+import sys
+
+import uvicorn
+from fastapi import FastAPI
 from typing_extensions import Union
 
 from yaml import load, FullLoader, parse
@@ -6,7 +11,8 @@ from pathlib import Path
 
 
 class SgridConfig:
-    config : Union[dict, None]
+    config: Union[dict, None]
+
     def __init__(self, config_file="sgrid.yml"):
         self.config = None
         self.config_file = config_file
@@ -67,3 +73,36 @@ class SgridConfig:
         if self.config is not None:
             return int(self.config.get("server.port", 8080))
         return 8080
+
+
+class SgridApplication(SgridConfig):
+    app: FastAPI = None
+    server: uvicorn.Server = None
+
+    def __init__(self, config_file="sgrid.yml"):
+        super().__init__(config_file)
+
+    async def run(self, app: FastAPI):
+        # 解析命令行参数
+        port = self.get_port()
+        print(f"Sgrid-Python[load port] {port}")
+        # 启动 uvicorn
+        self.app = app
+        uconf = uvicorn.Config(app, host="0.0.0.0", port=port)
+        server = uvicorn.Server(uconf)
+        try:
+            self.wait_for_shutdown()
+            await server.serve()
+        except Exception as e:
+            print(f"Sgrid-Python[Error] Failed to start server: {e}")
+
+    def wait_for_shutdown(self):
+        print("Sgrid-Python[wait_for_shutdown]")
+        # 注册信号处理函数
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+
+    def _signal_handler(self, sig, frame):
+        print(f'Sgrid-Python[receive-signal-value] {sig}，shutdown。')
+        self.server.shutdown()
+        sys.exit(0)

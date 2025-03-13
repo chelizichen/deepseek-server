@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from application.login import create_login_router
 from application.chat import create_chat_router
-from conf import sgrid_config
+from conf import sgrid_application
 from utils import wrap_response
 
 app = FastAPI()
@@ -29,7 +29,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 
 # 添加跨域支持
-origins = sgrid_config.get("cors_origins")
+origins = sgrid_application.get("cors_origins")
 
 print(f"添加跨域支持 origins {origins}")
 
